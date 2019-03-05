@@ -197,3 +197,9 @@ def powerspectrum(x,timestep=1):
 
 #returns volitility of a dataset
 #volitility(data list, time window)
+
+#returns list of moving average of data
+#movingavg(data list, time window)
+
+#returns list of exponentially weighted moving average
+#movingaveexp(data list, time window, half life of exp)

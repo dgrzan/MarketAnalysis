@@ -15,13 +15,17 @@ if __name__ == "__main__":
   
     print(f.correlation(f.timediff(y),f.timediff(y3)))
     print(f.autocorrelation(f.timediff(y),1))
+    print("")
     
-    t2, y2 = f.brownianwalk(10000,0,3,m=0.08)
+    t2, y2 = f.brownianwalk(10000,0,3,m=0)
     brownianhist = f.timediff(y2)
 
     f1, s1 = f.powerspectrum(y2)
     
-    linepara2 = f.fitline(np.log10(f1[1:]),np.log10(s1[1:]))
+    linepara2 = f.fitline(np.log10(f1)[:],np.log10(s1)[:])
+
+    t3, noise = f.whitenoise(10000,0,1)
+    f3, s3 = f.powerspectrum(noise)
 
     #creates figures
     fig = plt.figure(1,figsize=(10,7))
@@ -41,6 +45,10 @@ if __name__ == "__main__":
     ax4.set_title("Power spectrum")
     ax4.set_yscale("log")
     ax4.set_xscale("log")
+
+    fig4 = plt.figure(4,figsize=(10,7))
+    ax5 = fig4.add_subplot(2,1,1)
+    ax6 = fig4.add_subplot(2,1,2)
     
     #plots
     ax.plot(t,y,color="r")
@@ -51,5 +59,9 @@ if __name__ == "__main__":
     ax3.plot(f.bincenters(bounds),f.gauss(f.bincenters(bounds),*gausspara))
     ax4.plot(f1,s1,"o",markerfacecolor="None")
     ax4.plot(f1,f.logline(f1,*linepara2))
+    ax5.plot(t3, noise)
+    ax6.plot(f3,s3,"o",markerfacecolor="None")
+    ax6.set_yscale("log")
+    ax6.set_xscale("log")
     
     plt.show()
