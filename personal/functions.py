@@ -33,12 +33,22 @@ def brownianwalk(n,mean,sd,timestep=1,m=0,b=0):
             y.append(random.gauss(mean,sd)+m*timestep+y[i-1])
     return t, y
 
+#returns array of a white noise process
+#whitenoise(number of time steps, mean, standard deviation, timestep)
+def whitenoise(n,mean,sd,timestep=1):
+    noise = []
+    t = np.linspace(0,n*timestep,n)
+    for i in range(n):
+        noise.append(random.gauss(mean,sd))
+    return t, noise
+
 #linear fit function
 #line(input, slope, y-intercept)
 def line(x,slope,b):
     return slope*x + b
 
 #linear function in logx logy coordinates mapped to x y coordinates
+#logline(input, slope in log space, intercept in log space)
 def logline(x,slope,b):
     return (10**b)*x**slope
 
@@ -54,15 +64,29 @@ def gauss(x,a,m,s):
 
 #returns linear fit parameters for a given data set
 #fitline(x-axis list, y-xaxis list)
-def fitline(x,y):
+def fitline(x,y,verb=1):
     parameters, cov_matrix = curve_fit(line, x, y)
     slopeerr, intercepterr = np.diag(cov_matrix)
-    print("mean: "+str(parameters[0])+" +- "+str(slopeerr)+"\n"+"slope: "+str(parameters[1])+" +- "+str(intercepterr))
+    if verb==1:
+        print("Line Fit Parameters~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("slope: "+str(parameters[0])+" +- "+str(slopeerr)+"\n"+"intercept: "+str(parameters[1])+" +- "+str(intercepterr))
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
+    return parameters
+
+#fits a power relation to a dataset
+#fitpower(x-axis list, y-axis list)
+def fitpower(x,y,verb=1):
+    parameters, cov_matrix = curve_fit(logline,x,y)
+    slopeerr, intercepterr = np.diag(cov_matrix)
+    if verb==1:
+        print("Exp Fit Parameters~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("slope: "+str(parameters[0])+" +- "+str(slopeerr)+"\n"+"intercept: "+str(parameters[1])+" +- "+str(intercepterr))
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
     return parameters
 
 #returns gaussian fit parameters for a given data set
 #fitgauss(x-axist list, y-axist list)
-def fitgauss(x,y):
+def fitgauss(x,y,verb=1):
     binwidth = x[1]-x[0]
     count = 0
     for val in y:
@@ -75,7 +99,10 @@ def fitgauss(x,y):
     for i in range(len(parameters)):
         para.append(parameters[i])
     meanerr,sderr = np.diag(cov_matrix)
-    print("weight: "+str(para[0])+"\n"+"mean: "+str(para[1])+" +- "+str(meanerr)+"\n"+"sd: "+str(para[2])+" +- "+str(sderr))
+    if verb==1:
+        print("Gaussian Fit Parameters~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("weight: "+str(para[0])+"\n"+"mean: "+str(para[1])+" +- "+str(meanerr)+"\n"+"sd: "+str(para[2])+" +- "+str(sderr))
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
     return para
 
 #returns list of bin centers from histogram bounds list
@@ -160,7 +187,13 @@ def powerspectrum(x,timestep=1):
     s = np.abs(scipy.fftpack.fft(x))
     s = s*s
     s = s[:n//2]
-    return f, s
+    snozero = []
+    fnozero = []
+    for i in range(len(s)):
+        if s[i]>0 and f[i]>0:
+            snozero.append(s[i])
+            fnozero.append(f[i])
+    return fnozero, snozero
 
 #returns volitility of a dataset
 #volitility(data list, time window)
