@@ -195,11 +195,35 @@ def powerspectrum(x,timestep=1):
             fnozero.append(f[i])
     return fnozero, snozero
 
-#returns volitility of a dataset
-#volitility(data list, time window)
+#returns volitility of a dataset and time list ascociated with it
+#volitility(data list, time window (steps))
+def volitility(x,timewindow):
+    n = len(x)
+    if timewindow>n:
+        print("ERROR: time window is greater than length of list")
+        return float("nan")
+    t = []
+    v = []
+    for i in range(n):
+        if i+1>=timewindow:
+            t.append(i)
+            v.append(sd(x[i+1-timewindow:i]))
+    return t, v
 
 #returns list of moving average of data
 #movingavg(data list, time window)
+def movingavg(x,timewindow):
+    n = len(x)
+    if timewindow>n:
+        print("ERROR: time window is greater than length of list")
+        return float("nan")
+    t = []
+    avg = []
+    for i in range(n):
+        if i+1>=timewindow:
+            t.append(i)
+            avg.append(mean(x[i+1-timewindow:i]))
+    return t, avg
 
 #returns list of exponentially weighted moving average
 #movingaveexp(data list, time window, half life of exp)

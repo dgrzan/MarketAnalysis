@@ -17,7 +17,7 @@ if __name__ == "__main__":
     print(f.autocorrelation(f.timediff(y),1))
     print("")
     
-    t2, y2 = f.brownianwalk(10000,0,3,m=0)
+    t2, y2 = f.brownianwalk(1000,0,3,m=0)
     brownianhist = f.timediff(y2)
 
     f1, s1 = f.powerspectrum(y2)
@@ -26,6 +26,10 @@ if __name__ == "__main__":
 
     t3, noise = f.whitenoise(10000,0,1)
     f3, s3 = f.powerspectrum(noise)
+
+    t4, vol = f.volitility(y2,10)
+    t5, avg = f.movingavg(y2,10)
+    t6 ,avg2 = f.movingavg(y2,100)
 
     #creates figures
     fig = plt.figure(1,figsize=(10,7))
@@ -49,6 +53,11 @@ if __name__ == "__main__":
     fig4 = plt.figure(4,figsize=(10,7))
     ax5 = fig4.add_subplot(2,1,1)
     ax6 = fig4.add_subplot(2,1,2)
+
+    fig5 = plt.figure(5,figsize=(10,7))
+    ax7 = fig5.add_subplot(2,1,1)
+    ax8 = fig5.add_subplot(2,1,2)
+    ax7.set_title("volitility test")
     
     #plots
     ax.plot(t,y,color="r")
@@ -63,5 +72,9 @@ if __name__ == "__main__":
     ax6.plot(f3,s3,"o",markerfacecolor="None")
     ax6.set_yscale("log")
     ax6.set_xscale("log")
+    ax7.plot(t2,y2,color="black")
+    ax7.plot(t5,avg,color="blue")
+    ax7.plot(t6,avg2,color="green")
+    ax8.plot(t4,vol,color="red")
     
     plt.show()
