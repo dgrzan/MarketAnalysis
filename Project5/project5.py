@@ -44,20 +44,23 @@ def logreturns(price):
             returns.append(math.log(price[j])-math.log(price[j-1]))
     return returns
 
-def historicalvol(returns):
+def percentreturns(x, timewindow):
+    returns = []
+    for i in range(len(x)):
+        if (i+1)>=timewindow:
+            returns.append(100*(x[i]-x[i-timewindow+1])/x[i-timewindow+1])
+    return returns
+
+def historicalvol(returns, timewindow):
     v = []
-    n = len(returns)
-    for i in range(n):
-        if i+1>=21:
+    for i in range(len(returns)):
+        if (i+1)>=timewindow:
             vol = 0
-            for j in range(21):
+            for j in range(timewindow):
                 vol+=returns[i-j]**2
-            ((252/21)*vol)**0.5
+            ((252/timewindow)*vol)**0.5
             v.append(vol)
     return v
-
-def trailingreturns(x,time):
-    t = []
 
 if __name__ == "__main__":
 
@@ -79,26 +82,36 @@ if __name__ == "__main__":
                     price.append(float(line[4]))
 
                 #calculating
-                timereturns = time[1:]
-                returns = logreturns(price)
+                timeL = time[1:]
+                returnsL = logreturns(price)
 
-                histvol = historicalvol(returns)
+                histvol = historicalvol(returnsL,21)
                 timevol = time[21:]
+
+                returnsP = percentreturns(price,252)
+                timeP = time[252:]
+
+                print(len(histvol),len(returnsP))
+                print(len(histvol[252-21:]))
+                
+                cor = correlation(histvol[252-21:],returnsP)
 
                 #plotting
                 fig1 = plt.figure(1)
-                ax1 = fig1.add_subplot(1,1,1)
-                ax1.set_title("")
+                ax1 = fig1.add_subplot(2,1,1)
+                ax2 = fig1.add_subplot(2,1,2)
+                ax1.set_title("Trailing 12mo Percent Returns for the "+stockname)
+                ax1.set_ylabel("Percent Return (%)")
+                ax1.set_xlabel("Time (years)")
+                ax2.set_title("Historical Volitility")
+                ax2.set_ylabel("Volitility")
+                ax2.set_xlabel("Time (years)")
+                ax2.text(0.5,0.5,"Correlation Value: {:.2f}".format(cor),transform=fig1.transFigure,size=20,color="black")
 
-
+                ax1.plot(timeP,returnsP,color="black")
+                ax2.plot(timevol[252-21:],histvol[252-21:],color="red")
                 
-
-
-                
-                
-                #pdf.savefig()
-                #plt.close()
-
-                del time, price, returns, histvol
+                pdf.savefig()
+                plt.close()
                 
                 print("stock "+str(whichstock)+" written")
