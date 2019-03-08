@@ -66,6 +66,14 @@ if __name__ == "__main__":
 
     with PdfPages("Project5_David_Grzan.pdf") as pdf:
 
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+        ax.text(0.05,0.3,"The correlation coefficient relating the percent returns \nand the volitility are negative in nearly all of the \nstocks analyzed. Meaning, the percent returns and the \nvolitility are inversily correlated. As can be \nseen clearly in the plots below, sharp spikes \nin the volitility occur in times when there are sharp \ndeclines in the percent returns. This visually confirms \nwhat the negative correlation coefficient suggests.",transform=fig.transFigure,size=15,color="black")
+
+        plt.axis("off")
+        pdf.savefig()
+        plt.close()
+
         stocklist = [("GSPC","S&P 500"),("VIX","VIX"),("COST","Costco"),("CVX","Chevron"),("KO","Coca Cola"),("PEP","Pepsi"),("TGT","Target"),("WMT","Walmart"),("F","Ford"),("GE","General Electric")]
 
         whichstock = 0
@@ -89,28 +97,26 @@ if __name__ == "__main__":
                 timevol = time[21:]
 
                 returnsP = percentreturns(price,252)
-                timeP = time[252:]
-
-                print(len(histvol),len(returnsP))
-                print(len(histvol[252-21:]))
+                timeP = time[252-1:]
                 
-                cor = correlation(histvol[252-21:],returnsP)
+                cor = correlation(histvol[252-21-1:],returnsP)
 
                 #plotting
                 fig1 = plt.figure(1)
                 ax1 = fig1.add_subplot(2,1,1)
                 ax2 = fig1.add_subplot(2,1,2)
-                ax1.set_title("Trailing 12mo Percent Returns for the "+stockname)
-                ax1.set_ylabel("Percent Return (%)")
-                ax1.set_xlabel("Time (years)")
-                ax2.set_title("Historical Volitility")
-                ax2.set_ylabel("Volitility")
-                ax2.set_xlabel("Time (years)")
-                ax2.text(0.5,0.5,"Correlation Value: {:.2f}".format(cor),transform=fig1.transFigure,size=20,color="black")
+                ax1.set_title("Trailing 12mo Percent Returns for the "+stockname,fontweight="bold")
+                ax1.set_ylabel("Percent Return (%)",size=8)
+                ax1.set_xlabel("Time (years)",size=8)
+                ax2.set_title("Historical Volitility",fontweight="bold")
+                ax2.set_ylabel("Volitility",size=8)
+                ax2.set_xlabel("Time (years)",size=8)
+                ax2.text(0.14,0.38,"Correlation Value: {:.2f}".format(cor),transform=fig1.transFigure,size=10,color="blue")
 
                 ax1.plot(timeP,returnsP,color="black")
-                ax2.plot(timevol[252-21:],histvol[252-21:],color="red")
-                
+                ax2.plot(timevol[252-21-1:],histvol[252-21-1:],color="red")
+
+                plt.subplots_adjust(hspace=0.5)
                 pdf.savefig()
                 plt.close()
                 
