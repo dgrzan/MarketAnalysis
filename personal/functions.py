@@ -210,6 +210,37 @@ def volitility(x,timewindow):
             v.append(sd(x[i+1-timewindow:i]))
     return t, v
 
+#returns historical volitility
+#historicalvolitility(data list, time window (steps))
+def historicalvolitility(x, timewindow):
+    v = []
+    for i in range(len(x)):
+        if (i+1)>=timewindow:
+            vol = 0
+            for j in range(timewindow):
+                vol+=x[i-j]**2
+            ((252/timewindow)*vol)**0.5
+            v.append(vol)
+    return v
+
+#returns a list of the log returns
+#logreturns(data list)
+def logreturns(x):
+    returns = []
+    for j in range(len(x)):
+        if j>0:
+            returns.append(math.log(x[j])-math.log(x[j-1]))
+    return returns
+
+#returns a list of the percent returns
+#percentreturns(data list, time period over which to compare values)
+def percentreturns(x, timewindow):
+    returns = []
+    for i in range(len(x)):
+        if (i+1)>=timewindow:
+            returns.append(100*(x[i]-x[i-timewindow+1])/x[i-timewindow+1])
+    return returns
+
 #returns list of moving average of data
 #movingavg(data list, time window)
 def movingavg(x,timewindow):
