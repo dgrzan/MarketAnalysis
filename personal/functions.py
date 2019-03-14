@@ -210,7 +210,7 @@ def volitility(x,timewindow):
             v.append(sd(x[i+1-timewindow:i]))
     return t, v
 
-#returns historical volitility
+#returns standard deviation of log returns annualized to 1 year
 #historicalvolitility(data list, time window (steps))
 def historicalvolitility(x, timewindow):
     v = []

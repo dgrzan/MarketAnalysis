@@ -17,12 +17,12 @@ if __name__ == "__main__":
     print(f.autocorrelation(f.timediff(y),1))
     print("")
     
-    t2, y2 = f.brownianwalk(1000,0,3,m=0)
+    t2, y2 = f.brownianwalk(10000,0,3,m=0)
     brownianhist = f.timediff(y2)
 
     f1, s1 = f.powerspectrum(y2)
     
-    linepara2 = f.fitline(np.log10(f1)[:],np.log10(s1)[:])
+    linepara2 = f.fitline(np.log10(f1)[:2000],np.log10(s1)[:2000])
 
     t3, noise = f.whitenoise(10000,0,1)
     f3, s3 = f.powerspectrum(noise)
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     gausspara = f.fitgauss(f.bincenters(bounds),values)
     ax3.plot(f.bincenters(bounds),f.gauss(f.bincenters(bounds),*gausspara))
     ax4.plot(f1,s1,"o",markerfacecolor="None")
-    ax4.plot(f1,f.logline(f1,*linepara2))
+    ax4.plot(f1[:2000],f.logline(f1,*linepara2)[:2000])
     ax5.plot(t3, noise)
     ax6.plot(f3,s3,"o",markerfacecolor="None")
     ax6.set_yscale("log")
