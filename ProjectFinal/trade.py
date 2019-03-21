@@ -11,29 +11,35 @@ class trade:
     def __init__(self,stock1,stock2,timelist,starttime,location):
         index = f.indexoftime(timelist,starttime)
         if location>0:
-            if stock1[index]>stock2[index]:
-                self.stockS = stock1[index:]
-                self.stockL = stock2[index:]
-            else:
-                self.stockS = stock2[index:]
-                self.stockL = stock1[index:]
+            self.stockS = stock1[index:]
+            self.stockL = stock2[index:]
         else:
-            if stock1[index]>stock2[index]:
-                self.stockL = stock1[index:]
-                self.stockS = stock2[index:]
-            else:
-                self.stockL = stock2[index:]
-                self.stockS = stock1[index:]
+            self.stockL = stock1[index:]
+            self.stockS = stock2[index:]
+        self.stock1 = stock1[index:]
+        self.stock2 = stock2[index:]
         self.timelist = timelist[index:]
         self.starttime = starttime
         self.endtime = starttime
         self.startpriceL = self.stockL[0]
         self.endpriceL = self.stockL[0]
         self.startpriceS = self.stockS[0]
-        self.endpricelS = self.stockS[0]
+        self.endpriceS = self.stockS[0]
         self.inputamount = 0
         self.numberL = 0
         self.numberS = 0
+        self.direction = -1*location
+
+    def get_expectedratiodirection(self):
+        return self.direction
+
+    def get_ratiodirection(self):
+        if self.exitedtrade==1:
+            ratiofirst = self.stock1[0]/self.stock2[0]
+            ratiosecond = self.stock1[f.indexoftime(self.timelist,self.endtime)]/self.stock2[f.indexoftime(self.timelist,self.endtime)]
+            return np.sign(ratiosecond-ratiofirst)
+        else:
+            return 0
 
     def set_inputamount(self,amount):
         self.inputamount = amount
@@ -47,7 +53,7 @@ class trade:
         return self.endtime
 
     def get_startpriceL(self):
-        return self.startpriceh
+        return self.startpriceL
 
     def get_startpriceS(self):
         return self.startpriceS
@@ -67,6 +73,14 @@ class trade:
         self.endpriceL = self.stockL[index]
         self.endpriceS = self.stockS[index]
         self.exitedtrade = 1
+
+    def unexittrade(self):
+        self.exitedtrade = 0
+        self.endtime = self.starttime
+        self.endpriceL = self.startpriceL
+        self.endpriceS = self.startpriceS
+        self.shortreturn = 0
+        self.longreturn = 0
 
     def get_shortreturn(self):
         if self.exitedtrade==1:

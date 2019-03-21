@@ -132,16 +132,16 @@ def zscore(ratio,meann,sdev):
     return z
 
 #returns a list of index of times for when to trade, and a list to plot when trades happened
-#whentotrade(zscore list, time list, sd's threshold)
-def whentotrade(zscoree,timelist,sds):
+#whentotrade(zscore list, time list, moving average list, 6mo correlation, sd's threshold)
+def whentotrade(zscoree,timelist,cor,sds):
     when = []
     whenlist = []
     lastval = 0
     for i in range(len(zscoree)):
         whenlist.append(0)
-        if (lastval<sds and lastval>-sds) and (zscoree[i]>sds or zscoree[i]<-sds):
+        if (lastval<sds and lastval>-sds) and (zscoree[i]>sds or zscoree[i]<-sds) and cor[i]>0:
             when.append(timelist[i])
-            whenlist[i]+=1
+            whenlist[i]+=0.1
         lastval = zscoree[i]
     return when, whenlist
 
