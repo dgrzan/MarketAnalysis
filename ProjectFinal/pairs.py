@@ -17,19 +17,24 @@ import budgetcontrol
 if __name__ == "__main__":
 
     #relavent variables to change:
-    uppersigma = 1.5
+    uppersigma = 2
     lowersigma = 1
     longavgtime = 21*3
-    lookback = 252*30
     shortavgtime = 2
+    lookback = 252*30
     
     #list of stocks that will be paired together, along with their names
-    pairslist = [("CVX","Chevron","XOM","ExxonMobil"),("KO","Coca Cola","PEP","Pepsi"),("DUK","Duke Energy","NEE","NextEra Energy"),("LOW","Lowe's","HD","Home Depot"),("MCD","McDonald's","YUM","Yum! Brands"),("UPS","UPS","FDX","FedEx"),("WMT","Walmart","TGT","Target"),("V","Visa","AXP","American Express"),("WBA","Walmart","CVS","CVS"),("VZ","Verizon","T","AT&T"),("BUD","Budweiser","TAP","Coors")]
+    pairslist = [("CVX","Chevron","XOM","ExxonMobil"),("KO","Coca Cola","PEP","Pepsi"),("DUK","Duke Energy","NEE","NextEra Energy"),("LOW","Lowe's","HD","Home Depot"),("MCD","McDonald's","YUM","Yum! Brands"),("UPS","UPS","FDX","FedEx"),("WMT","Walmart","TGT","Target"),("V","Visa","AXP","American Express"),("WBA","Walgreens","CVS","CVS"),("VZ","Verizon","T","AT&T"),("BUD","Budweiser","TAP","Coors")]
     #do not use: ("HPQ","HP","IBM","IBM") cor=-0.63
     #do not use: ("UAA","Unde Armour","NKE","Nike") cor = 0.65
     #do not use: ("SNE","Sony","MSFT","Microsoft")
     portfolio = []
     totalprofit = 0
+
+    names = []
+    pairsreturns = []
+    pairstradenum = []
+    correlationvalue = []
     
     #looping through pairs of stocks
     for stock1,stockname1,stock2,stockname2 in pairslist:
@@ -37,6 +42,8 @@ if __name__ == "__main__":
         time2 = []
         price1 = []
         price2 = []
+
+        names.append(stock1+" & "+stock2)
         
         #getting data from first stock
         with open("/home/davidgrzan/Econophysics/ProjectFinal/StockData/"+stock1+".txt") as tsv:
@@ -67,16 +74,17 @@ if __name__ == "__main__":
         if stock1=="KO": totaltime = time1
             
         #calculating quantities
-        timecor252, cor252 = f.correlation(price1,price2,21*3,time1)
+        timecor252, cor252 = f.correlation(price1,price2,longavgtime,time1)
         timecor504, cor504 = f.correlation(price1,price2,504,time1)
         print("Correlation between "+stockname1+" and "+stockname2+": "+str(f.correlationall(price1,price2)))
+        correlationvalue.append(f.correlationall(price1,price2))
         timeratio, priceratio = f.ratio(price1,price2,time1)
-        timesd3mo, movingsd3mo = f.movingsd(priceratio,21*3,timeratio)
-        timeavg3mo, movingavg3mo = f.movingavg(priceratio,21*3,timeratio)
-        timeavg5d, movingavg5d = f.movingavg(priceratio,2,timeratio)
-        low1, high1 = f.sdbounds(movingavg3mo,movingsd3mo,1.5)
+        timesd3mo, movingsd3mo = f.movingsd(priceratio,longavgtime,timeratio)
+        timeavg3mo, movingavg3mo = f.movingavg(priceratio,longavgtime,timeratio)
+        timeavg5d, movingavg5d = f.movingavg(priceratio,shortavgtime,timeratio)
+        low1, high1 = f.sdbounds(movingavg3mo,movingsd3mo,uppersigma)
         zscoree = f.zscore(movingavg5d,movingavg3mo,movingsd3mo)
-        when, whenlist = f.whentotrade(zscoree,timeavg3mo,cor252,1.5)
+        when, whenlist = f.whentotrade(zscoree,timeavg3mo,cor252,uppersigma)
         #print("Cointigration Value: "+str(f.cointigration(price1,price2)))
 
         #instantiates trade objects
@@ -92,7 +100,7 @@ if __name__ == "__main__":
             startindex = f.indexoftime(timeavg3mo,starttime)
             timezscore = timeavg3mo[startindex:]
             zscoreupdate = zscoree[startindex:]
-            sigbounds = 1
+            sigbounds = lowersigma
             for qq in range(len(zscoreupdate)-2):
                 trades[q].exittrade(timezscore[qq+2])
                 if trades[q].get_totalreturns()<-100:
@@ -113,11 +121,13 @@ if __name__ == "__main__":
             #print(trades[q].get_expectedratiodirection(),trades[q].get_ratiodirection())
             #print("Long Prices: "+str((trades[q].get_startpriceL(),trades[q].get_endpriceL())))
             #print("Short Prices: "+str((trades[q].get_startpriceS(),trades[q].get_endpriceS())))
-            if stock1=="CVX": teststarttime = trades[481].get_starttime()
-            if stock1=="CVX": testendtime = trades[481].get_endtime()
+            if stock1=="CVX": teststarttime = trades[1].get_starttime()
+            if stock1=="CVX": testendtime = trades[1].get_endtime()
 
         print("Total Trades: "+str(len(trades)))
         print("Total Profit: "+str(totalreturns))
+        pairsreturns.append(totalreturns)
+        pairstradenum.append(len(trades))
         totalprofit+=totalreturns
         portfolio.append(trades)
 
@@ -134,7 +144,7 @@ if __name__ == "__main__":
             ax1.set_title("Prices of "+stockname1+" and "+stockname2,size=20)
             ax1.set_xlabel("Time (years)")
             ax1.set_ylabel("Price (USD)")
-            ax2.plot(timeratio,priceratio,color="green")
+            #ax2.plot(timeratio,priceratio,color="green")
             ax2.plot(timeavg3mo,movingavg3mo,color="orange")
             ax2.plot(timeavg5d,movingavg5d,color="black")
             ax2.plot(timeavg3mo,low1,color="red",linestyle="--")
@@ -153,9 +163,9 @@ if __name__ == "__main__":
             ax21.plot(timeavg3mo,zscoree,color="black")
             #ax21.plot(timeavg3mo,whenlist,color="red")
             ax21.plot(timeavg3mo,np.zeros(len(timeavg3mo))+1,color="blue",linestyle="--")
-            ax21.plot(timeavg3mo,np.zeros(len(timeavg3mo))+1.5,color="green",linestyle="--")
+            ax21.plot(timeavg3mo,np.zeros(len(timeavg3mo))+2,color="green",linestyle="--")
             ax21.plot(timeavg3mo,np.zeros(len(timeavg3mo))-1,color="blue",linestyle="--")
-            ax21.plot(timeavg3mo,np.zeros(len(timeavg3mo))-1.5,color="green",linestyle="--")
+            ax21.plot(timeavg3mo,np.zeros(len(timeavg3mo))-2,color="green",linestyle="--")
             ax21.plot(timeavg3mo,np.zeros(len(timeavg3mo)),color="red",linestyle="--")
             ax21.set_title("Z-Score of Spread Ratio",size=20)
             ax21.set_xlabel("Time (years)")
@@ -217,7 +227,31 @@ if __name__ == "__main__":
     ax51.set_title("Number of Active Trades",size=20)
     ax51.set_xlabel("Time (years)")
     ax51.set_ylabel("Number of Active Trades")
-    
+
+    fig6 = plt.figure(6,figsize=(16,8))
+    ax61 = fig6.add_subplot(1,1,1)
+    ax61.bar(names,pairstradenum)
+    ax61.set_title("Total Number of Trades",size=20)
+    ax61.set_xlabel("Pair")
+    ax61.set_ylabel("Trades")
+    plt.xticks(rotation="vertical",fontsize=8)
+
+    fig7 = plt.figure(7,figsize=(16,8))
+    ax71 = fig7.add_subplot(1,1,1)
+    ax71.bar(names,pairsreturns)
+    ax71.set_title("Profit of Each Pair",size=20)
+    ax71.set_xlabel("Pair")
+    ax71.set_ylabel("Profits (USD)")
+    plt.xticks(rotation="vertical",fontsize=8)
+
+    fig8 = plt.figure(8,figsize=(16,8))
+    ax81 = fig8.add_subplot(1,1,1)
+    ax81.bar(names,correlationvalue)
+    ax81.set_title("Correlation Value of Each Pair",size=20)
+    ax81.set_xlabel("Pair")
+    ax81.set_ylabel("Correlation Value")
+    plt.xticks(rotation="vertical",fontsize=8)
+
     print("Total: "+str(totalprofitss))
     
     plt.show()
